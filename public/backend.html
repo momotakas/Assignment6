@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend for reviews</title>
+</head>
+
+<body>
+    <!-- 
+    TO DO:
+
+    
+-->
+    <p>
+        <label for="allDb">Select entry to edit:</label>
+        <select name="allDb" id="allDb">
+        </select>
+        <button id="selectOne">select</button>
+    </p>
+    <p>OR</p>
+    <p>Make a new entry:</p>
+    <form>
+        <p>
+            <input type="hidden" id="id" value="" />
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" />
+            <label for="name">Image:</label>
+            <input type="text" id="img" name="img" />
+        </p>
+        <p>
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" />
+            <label for="stars">Stars:</label>
+            <select id="stars" name="stars">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+        </p>
+        <p>
+            <label for="reviewText">Review Text:</label>
+            <input type="text" id="reviewText" name="reviewText" />
+            <button id="submit">submit</button>
+            <button id="delete">delete</button>
+        </p>
+    </form>
+
+
+
+    <script>
+        const sel = document.getElementById("allDb");
+        getAllData();
+        async function getAllData() {
+            const response = await fetch('/api');
+            const data = await response.json();
+            console.log("got data: " + data);
+            for (item of data.rows) {
+                const opt = document.createElement("option");
+                // console.log(item.doc);
+                opt.value = item.doc._id;
+                opt.text = item.doc.name;
+                opt.selected = "selected";
+                sel.add(opt, null);
+            }
+        }
+
+        const selectOne = document.querySelector('#selectOne');
+        selectOne.addEventListener('click', async (res, req) => {
+            const sel = document.getElementById("allDb");
+            const id = sel.value;
+            // console.log('hello: '+id);
+            const api_url = `/api/${id}`;
+            // const response = await fetch(api_url);
+            res = await fetch(api_url);
+            const data = await res.json();
+            console.log("got data: " + JSON.stringify(data));
+            console.log(data.name);
+            document.getElementById('id').value = data._id;
+            document.getElementById('name').value = data.name;
+            document.getElementById('description').value = data.description;
+            document.getElementById('img').value = data.img;
+            document.getElementById('stars').value = data.stars;
+            document.getElementById('reviewText').value = data.reviewText;
+        });
+
+        const submit = document.querySelector('#submit');
+        submit.addEventListener('click', async (res, req) => {
+            let id = document.getElementById('id').value;
+            const name = document.getElementById('name').value;
+            let update = true;
+            if (id == "") {
+                id = name.split(' ').join('_');
+                update = false;
+            }
+            const desc = document.getElementById('description').value;
+            const img = document.getElementById('img').value;
+            const stars = document.getElementById('stars').value;
+            const rev = document.getElementById('reviewText').value;
+            const data = {
+                _id: id,
+                name: name,
+                description: desc,
+                img: img,
+                stars: stars,
+                reviewText: rev
+            }
+            if (!update) {
+                try {
+                    const response = await fetch("/insert", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(data),
+                    });
+                    const result = await response.json();
+                    console.log("Success:", result);
+                } catch (error) {
+                    console.error("Error:", error);
+                }
+            } else {
+                try {
+                    const response = await fetch("/update", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(data),
+                    });
+                    const result = await response.json();
+                    console.log("Success:", result);
+                } catch (error) {
+                    console.error("Error:", error);
+                }
+            }
+        });
+
+        const removeDoc = document.querySelector('#delete');
+        removeDoc.addEventListener('click', async (res, req) => {
+            alert("are you sure you ant to delete");
+            try {
+            let id = document.getElementById('id').value;
+            res = await fetch(`/delete/${id}`);
+            const data = await res.json();
+            console.log("got data: " + JSON.stringify(data));
+            } catch (error) {
+                console.error("Error:", error); 
+            }
+        });
+
+    </script>
+</body>
+
+</html>
