@@ -14,7 +14,7 @@
 //         stars: 3,
 //         reviewText: "it's better than the other one"
 //     }
-// ];
+// ]; 
 const reviews = [];
 let currItem = 0;
 getData();
